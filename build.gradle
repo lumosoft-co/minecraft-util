@@ -1,0 +1,56 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'com.github.johnrengelman.shadow' version '7.1.0' // Added Shadow plugin
+}
+
+group = 'com.agoramp'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // https://mvnrepository.com/artifact/io.netty/netty-all
+    implementation 'io.netty:netty-all:4.1.92.Final'
+
+    // Adventure
+    shadow "net.kyori:adventure-api:4.13.1"
+    shadow "net.kyori:adventure-text-serializer-legacy:4.13.1"
+    shadow "net.kyori:adventure-text-serializer-gson:4.13.1"
+
+    implementation 'org.projectlombok:lombok:1.18.26'
+    annotationProcessor 'org.projectlombok:lombok:1.18.26'
+}
+
+def targetJavaVersion = 8
+java {
+    def javaVersion = JavaVersion.toVersion(targetJavaVersion)
+    sourceCompatibility = javaVersion
+    targetCompatibility = javaVersion
+    if (JavaVersion.current() < javaVersion) {
+        toolchain.languageVersion = JavaLanguageVersion.of(targetJavaVersion)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    if (targetJavaVersion >= 10 || JavaVersion.current().isJava10Compatible()) {
+        options.release = targetJavaVersion
+    }
+}
+
+// Configure the shadow plugin
+shadowJar {
+    configurations = [project.configurations.shadow]
+    archiveClassifier.set('')
+}
+
+// Added publishing configuration
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact shadowJar // Publish the shadowJar as artifact
+        }
+    }
+}
