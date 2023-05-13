@@ -28,7 +28,7 @@ public interface Platform {
 
     void sendPacket(UUID player, ModelledPacket packet);
 
-    default ModelledPacket handlePacket(UUID player, ModelledPacket packet) {
+    default boolean handlePacket(UUID player, ModelledPacket packet) {
         return PacketController.INSTANCE.handle(player, packet);
     }
 }

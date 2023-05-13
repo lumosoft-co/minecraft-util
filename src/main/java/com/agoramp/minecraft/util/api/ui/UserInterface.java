@@ -2,9 +2,10 @@ package com.agoramp.minecraft.util.api.ui;
 
 import com.agoramp.minecraft.util.MinecraftUtil;
 import com.agoramp.minecraft.util.controller.InterfaceController;
+import com.agoramp.minecraft.util.data.packets.models.ClickWindowPacket;
 import com.agoramp.minecraft.util.data.packets.models.ModelledPacket;
-import com.agoramp.minecraft.util.data.packets.models.packets.CloseWindowPacket;
-import com.agoramp.minecraft.util.data.packets.models.packets.WindowItemsPacket;
+import com.agoramp.minecraft.util.data.packets.models.CloseWindowPacket;
+import com.agoramp.minecraft.util.data.packets.models.WindowItemsPacket;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -15,6 +16,7 @@ import java.lang.reflect.ParameterizedType;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.function.Consumer;
 
 @SuppressWarnings("unused")
 public abstract class UserInterface<ItemStack> {
@@ -44,7 +46,6 @@ public abstract class UserInterface<ItemStack> {
         this.size = size;
         this.title = title;
         Class<?> type = getClass();
-        if (type.getSuperclass() != getClass()) throw new Error("UI's parent must be UserInterface");
         if (type.getGenericSuperclass() instanceof ParameterizedType) {
             ParameterizedType p = (ParameterizedType) type.getGenericSuperclass();
             itemType = (Class<ItemStack>) p.getActualTypeArguments()[0];
@@ -61,7 +62,7 @@ public abstract class UserInterface<ItemStack> {
         this.player = player;
         try {
             doDataPreload().thenAccept(v -> {
-                UserInterface open = InterfaceController.INSTANCE.opened.get(player);
+                UserInterface<?> open = InterfaceController.INSTANCE.opened.get(player);
                 if (open != null) open.close();
                 try {
                     if (render) {
@@ -141,8 +142,18 @@ public abstract class UserInterface<ItemStack> {
         sendContents();
     }
 
-    public void addSlotListener(int slot, Runnable  listener) {
-        addSlotListener(slot, v -> listener.run());
+    public void addSlotListener(int slot, Runnable listener) {
+        addSlotListener(slot, v -> {
+            listener.run();
+            return false;
+        });
+    }
+
+    public void addSlotListener(int slot, Consumer<ClickWindowPacket> listener) {
+        addSlotListener(slot, v -> {
+            listener.accept(v);
+            return false;
+        });
     }
 
     public void addSlotListener(int slot, InterfaceClickListener listener) {
@@ -165,6 +176,8 @@ public abstract class UserInterface<ItemStack> {
 
     private void openInventory(UUID player) {
         windowId = MinecraftUtil.PLATFORM.openInventory(player, size, getTitle());
+        sendContents();
+        InterfaceController.INSTANCE.opened.put(player, this);
     }
 
     protected static int slot(int x, int y) {

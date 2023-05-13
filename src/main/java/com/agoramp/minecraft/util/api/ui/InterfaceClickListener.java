@@ -1,7 +1,9 @@
 package com.agoramp.minecraft.util.api.ui;
 
-public interface InterfaceClickListener{
+import com.agoramp.minecraft.util.data.packets.models.ClickWindowPacket;
 
-    //The event is by default cancelled. Can be renewed via the event
-    void onClick(PlayerClickData event);
+public interface InterfaceClickListener {
+
+    // Return true to not resend inventory content after action
+    boolean onClick(ClickWindowPacket event);
 }

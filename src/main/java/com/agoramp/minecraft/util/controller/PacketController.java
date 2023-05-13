@@ -17,14 +17,14 @@ public enum PacketController implements GameController {
 
     private final Map<Class<? extends ModelledPacket>, SortedSet<Handler>> HANDLERS = new ConcurrentHashMap<>();
 
-    public ModelledPacket handle(UUID player, ModelledPacket packet) {
+    public boolean handle(UUID player, ModelledPacket packet) {
         Class<?> type = packet.getClass();
         SortedSet<Handler> handles = HANDLERS.getOrDefault(type, Collections.emptySortedSet());
         for (Handler handle : handles) {
             packet = handle.handle(player, packet);
-            if (packet == null) return null;
+            if (packet == null) return true;
         }
-        return packet;
+        return false;
     }
 
     public void register(Object instance) {

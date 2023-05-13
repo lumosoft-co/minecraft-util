@@ -46,6 +46,8 @@ shadowJar {
     archiveClassifier.set('')
 }
 
+build.dependsOn(shadowJar)
+
 // Added publishing configuration
 publishing {
     publications {
