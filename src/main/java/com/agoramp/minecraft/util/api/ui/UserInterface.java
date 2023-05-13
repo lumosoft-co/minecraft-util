@@ -145,14 +145,14 @@ public abstract class UserInterface<ItemStack> {
     public void addSlotListener(int slot, Runnable listener) {
         addSlotListener(slot, v -> {
             listener.run();
-            return false;
+            return true;
         });
     }
 
     public void addSlotListener(int slot, Consumer<ClickWindowPacket> listener) {
         addSlotListener(slot, v -> {
             listener.accept(v);
-            return false;
+            return true;
         });
     }
 
