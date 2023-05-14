@@ -44,6 +44,8 @@ tasks.withType(JavaCompile).configureEach {
 shadowJar {
     configurations = [project.configurations.shadow]
     archiveClassifier.set('')
+
+    relocate 'net.kyori', 'com.agoramp.kyori'
 }
 
 build.dependsOn(shadowJar)

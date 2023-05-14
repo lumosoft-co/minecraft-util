@@ -2,10 +2,7 @@ package com.agoramp.minecraft.util.api.ui;
 
 import com.agoramp.minecraft.util.MinecraftUtil;
 import com.agoramp.minecraft.util.controller.InterfaceController;
-import com.agoramp.minecraft.util.data.packets.models.ClickWindowPacket;
-import com.agoramp.minecraft.util.data.packets.models.ModelledPacket;
-import com.agoramp.minecraft.util.data.packets.models.CloseWindowPacket;
-import com.agoramp.minecraft.util.data.packets.models.WindowItemsPacket;
+import com.agoramp.minecraft.util.data.packets.models.*;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -31,7 +28,7 @@ public abstract class UserInterface<ItemStack> {
     public ItemStack cursorItem;
 
     @Getter
-    private int windowId = -1, contentId = 0;
+    private int windowId = -1;
 
     public UUID player;
 
@@ -63,8 +60,8 @@ public abstract class UserInterface<ItemStack> {
         try {
             doDataPreload().thenAccept(v -> {
                 UserInterface<?> open = InterfaceController.INSTANCE.opened.get(player);
-                if (open != null) open.close();
                 try {
+                    if (open != null) open.close();
                     if (render) {
                         render();
                     }
@@ -91,7 +88,6 @@ public abstract class UserInterface<ItemStack> {
         playerInventoryListener = null;
         loadListeners();
 
-        contentId++;
         sendContents();
     }
 
@@ -164,7 +160,7 @@ public abstract class UserInterface<ItemStack> {
     private List<ModelledPacket> getContentUpdatePackets() {
         List<ModelledPacket> list = new ArrayList<>();
         if (windowId == -1) return list;
-        //list.add(new SetSlotPacket())
+        MinecraftUtil.PLATFORM.schedule(() -> MinecraftUtil.PLATFORM.sendPacket(player, new SetSlotPacket<>(0, -1, null)), 5);
         list.add(new WindowItemsPacket<>(windowId, inventory, metadata));
         return list;
     }

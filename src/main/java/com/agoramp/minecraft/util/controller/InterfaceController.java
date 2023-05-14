@@ -30,13 +30,12 @@ public enum InterfaceController implements GameController {
         if (open == null) return packet;
         if (packet.getContainerId() != open.getWindowId() && packet.getContainerId() != 0) return packet; // i guess they got out
         MinecraftUtil.PLATFORM.schedule(() -> {
-            int contentId = open.getContentId();
-            boolean cancelled = false;
+            boolean cancelled = true;
             if (packet.getContainerId() == open.getWindowId() && packet.getSlotNum() < open.getSize()) {
                 InterfaceClickListener listener = open.getSlotListeners().get(packet.getSlotNum());
-                if (listener != null) cancelled |= listener.onClick(packet);
+                if (listener != null) cancelled = listener.onClick(packet);
                 listener = open.getSlotListeners().get(Integer.MIN_VALUE);
-                if (listener != null) cancelled |= listener.onClick(packet);
+                if (listener != null) cancelled &= listener.onClick(packet);
             } else {
                 InterfaceClickListener listener = open.getPlayerInventoryListener();
                 int accurateSlotId = packet.getSlotNum() - open.getSize();
@@ -44,9 +43,12 @@ public enum InterfaceController implements GameController {
                 else accurateSlotId += 9;
                 if (accurateSlotId == open.getSize()) accurateSlotId = 0;
                 ClickWindowPacket next = new ClickWindowPacket(packet.getContainerId(), accurateSlotId, packet.getButtonNum(), packet.getActionNum(), packet.getItem(), packet.getClickType());
-                if (listener != null) cancelled |= listener.onClick(next);
+                if (listener != null) cancelled = listener.onClick(next);
             }
-            if (cancelled && open.getContentId() == contentId) open.sendContents();
+            if (cancelled) {
+                open.render();
+                open.sendContents();
+            }
         });
         return null;
     }
