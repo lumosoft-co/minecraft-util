@@ -4,8 +4,7 @@ import lombok.Data;
 
 @Data
 public class ClickWindowPacket implements ModelledPacket {
-    private final int containerId, slotNum, buttonNum;
-    private final short actionNum;
+    private final int containerId, slotNum;
     private final Object item;
     private final InventoryClickType clickType;
 
