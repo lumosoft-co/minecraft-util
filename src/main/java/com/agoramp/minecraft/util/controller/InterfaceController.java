@@ -41,7 +41,7 @@ public enum InterfaceController implements GameController {
                 if (accurateSlotId > 27) accurateSlotId -= 27;
                 else accurateSlotId += 9;
                 if (accurateSlotId == open.getSize()) accurateSlotId = 0;
-                ClickWindowPacket next = new ClickWindowPacket(packet.getContainerId(), accurateSlotId, packet.getItem(), packet.getClickType());
+                ClickWindowPacket next = new ClickWindowPacket(packet.getContainerId(), accurateSlotId, packet.getButtonNum(), packet.getItem(), packet.getClickType());
                 if (listener != null) cancelled = listener.onClick(next);
             }
             if (cancelled) {
